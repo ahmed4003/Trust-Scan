@@ -1,0 +1,621 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Trust Scan — فاحص الملفات والروابط</title>
+<meta name="description" content="Trust Scan: detect corrupt or spoofed files and broken, fake or phishing links — 100% in your browser.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%232563eb'/><stop offset='1' stop-color='%2306b6d4'/></linearGradient></defs><path d='M50 6 90 21v30c0 23-17 39-40 47C27 90 10 74 10 51V21z' fill='url(%23g)'/><circle cx='50' cy='45' r='9' fill='%23071230'/><path d='M44 50h12l3 21H41z' fill='%23071230'/></svg>">
+<style>
+:root{--a:#2563eb;--a2:#06b6d4;--af:#fff;--acc:var(--a);--acc2:var(--a2);--accfg:var(--af);
+--bg:#f6f7fb;--card:#fff;--fg:#14171f;--mut:#667085;--line:#e4e7ee;
+--c-critical:#7f1d1d;--c-high:#dc2626;--c-medium:#d97706;--c-low:#0891b2;--c-info:#16a34a;color-scheme:light}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#0e1117;--card:#161b24;--fg:#e8eaee;--mut:#98a1b2;--line:#262d3a;--acc:color-mix(in srgb,var(--a) 78%,#fff);--acc2:color-mix(in srgb,var(--a2) 78%,#fff);--accfg:#0b0f17;color-scheme:dark}}
+:root[data-theme=dark]{--bg:#0e1117;--card:#161b24;--fg:#e8eaee;--mut:#98a1b2;--line:#262d3a;--acc:color-mix(in srgb,var(--a) 78%,#fff);--acc2:color-mix(in srgb,var(--a2) 78%,#fff);--accfg:#0b0f17;color-scheme:dark}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.6 system-ui,-apple-system,"Segoe UI",Tahoma,"Noto Sans Arabic",sans-serif;
+padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)}
+.wrap{max-width:1180px;margin:0 auto;padding:20px 16px 48px}
+header{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+.sub{color:var(--mut);font-size:13px;margin:2px 0 0}
+header{position:relative}
+h1{font-size:25px;font-weight:800;letter-spacing:-.4px;margin:0;line-height:1.15;direction:ltr;unicode-bidi:isolate}
+h1 .g{background:linear-gradient(90deg,var(--acc),var(--acc2),var(--acc));background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:shim 6s linear infinite}
+.brand{display:flex;align-items:center;gap:16px;direction:ltr}
+.brand .sub{unicode-bidi:plaintext;text-align:start;max-width:46ch}
+.lg{--s:68px;--u:calc(var(--s)/100);width:var(--s);height:var(--s);flex:none;perspective:calc(var(--s)*5.5);position:relative}
+.tilt,.stage,.ly{transform-style:preserve-3d}
+.tilt{width:100%;height:100%;will-change:transform}
+.stage{width:100%;height:100%}
+.lg{cursor:pointer;-webkit-tap-highlight-color:transparent}
+.spark{animation:fl0 3.4s linear infinite}
+.ly{position:absolute;inset:0;transform:translateZ(calc(var(--u)*var(--z,0)))}
+.ly svg{width:100%;height:100%;overflow:visible;display:block}
+.ly.glow{filter:blur(calc(var(--s)*.09));opacity:.55}
+.r1{animation:fl1 14s linear infinite}.r2{animation:fl2 10s linear infinite}.r3{animation:fl3 8s linear infinite}
+.sweep{animation:swp 3.6s ease-in-out infinite}
+.busy .spark{animation-duration:.9s}.busy .r1,.busy .r2,.busy .r3{animation-duration:1.6s}
+.lg .shadow{position:absolute;left:12%;right:12%;bottom:-14%;height:10%;border-radius:50%;background:radial-gradient(closest-side,color-mix(in srgb,var(--acc) 55%,transparent),transparent);filter:blur(4px);will-change:transform}
+@keyframes fl0{to{stroke-dashoffset:-100}}@keyframes fl1{to{stroke-dashoffset:-50}}@keyframes fl2{to{stroke-dashoffset:25}}@keyframes fl3{to{stroke-dashoffset:-20}}
+@keyframes swp{0%{transform:translateX(-70px) skewX(-20deg)}60%,100%{transform:translateX(110px) skewX(-20deg)}}
+@keyframes shim{to{background-position:-200% 0}}
+body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+background:radial-gradient(60rem 30rem at 85% -10%,color-mix(in srgb,var(--acc) 17%,transparent),transparent 60%),radial-gradient(50rem 28rem at -10% 0,color-mix(in srgb,var(--acc2) 13%,transparent),transparent 60%)}
+#splash{position:fixed;inset:0;z-index:99;display:grid;place-items:center;background:var(--bg);pointer-events:none;animation:sp 2.6s forwards}
+#splash .in{display:flex;align-items:center;justify-content:center;gap:28px;flex-wrap:wrap;direction:ltr;padding:24px}
+#splash .lg{--s:150px;animation:pop .9s cubic-bezier(.2,1.4,.4,1) both}
+#splash .tx{animation:rise .8s .3s both}
+#splash h2{font-size:clamp(34px,7vw,52px);font-weight:800;letter-spacing:-1px;margin:0;line-height:1}
+#splash h2 .g{background:linear-gradient(90deg,var(--acc),var(--acc2));-webkit-background-clip:text;background-clip:text;color:transparent}
+#splash p{color:var(--mut);margin:10px 0 0;unicode-bidi:plaintext;max-width:34ch}
+@keyframes sp{0%,72%{opacity:1}100%{opacity:0;visibility:hidden}}
+@keyframes pop{from{transform:scale(.35);opacity:0}}
+@keyframes rise{from{transform:translateY(14px);opacity:0}}
+.pal{position:absolute;inset-inline-end:0;top:calc(100% + 8px);z-index:20;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px;width:min(320px,calc(100vw - 32px));box-shadow:0 18px 50px rgba(0,0,0,.25)}
+.pal h3{margin:0 0 10px;font-size:13px;color:var(--mut);font-weight:600}
+.pal .g7{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.sw{display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid var(--line);border-radius:12px;background:transparent;cursor:pointer;text-align:start;transition:.15s}
+.sw:hover{transform:translateY(-1px);border-color:var(--acc)}
+.sw i{width:26px;height:26px;border-radius:50%;flex:none;box-shadow:inset 0 0 0 2px rgba(255,255,255,.35)}
+.sw[aria-pressed=true]{border-color:var(--acc);background:color-mix(in srgb,var(--acc) 10%,transparent);font-weight:700}
+.sw[aria-pressed=true] i::after{content:"";display:block;height:100%;background:#fff;filter:drop-shadow(0 1px 1px rgba(0,0,0,.45));-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E") center/62% no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E") center/62% no-repeat}
+:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.sp{flex:1}
+#noticeBar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 14px;padding:10px 12px;border:1px solid var(--line);border-radius:14px;background:var(--card)}
+#noticeBar .hint{color:var(--mut);font-size:12px;flex:1;min-width:160px}
+#toast{position:fixed;z-index:120;inset-inline:16px;top:16px;margin:auto;max-width:520px;padding:13px 16px;border:1px solid var(--line);border-inline-start:5px solid var(--acc);border-radius:14px;background:var(--card);box-shadow:0 12px 40px #0003;display:none}
+#toast.show{display:block;animation:toastIn .2s ease-out}
+#toast[data-kind=bad]{border-inline-start-color:var(--c-high)}#toast[data-kind=good]{border-inline-start-color:var(--c-info)}
+@keyframes toastIn{from{transform:translateY(-8px);opacity:0}to{transform:translateY(0);opacity:1}}
+.ic{width:1.2em;height:1.2em;flex:none;display:block;fill:none;stroke:currentColor;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
+.btn,.tab{display:inline-flex;align-items:center;gap:8px}
+.btn .ic{opacity:.85}.btn.p .ic{opacity:1}
+.tab[aria-selected=true] .ic{color:var(--acc)}
+.ic-sun{display:none}
+:root[data-theme=dark] .ic-sun{display:block}:root[data-theme=dark] .ic-moon{display:none}
+@media(prefers-color-scheme:dark){:root:not([data-theme]) .ic-sun{display:block}:root:not([data-theme]) .ic-moon{display:none}}
+.drop .ic{width:46px;height:46px;margin:0 auto 10px;color:var(--acc);stroke-width:1.4}
+.drop.on .ic{transform:translateY(-3px);transition:.15s}
+.note,footer p{display:flex;gap:8px;align-items:flex-start}.note .ic,footer .ic{margin-top:.2em;width:1.1em;height:1.1em}
+#themeBtn,#palBtn,#langBtn{padding:8px 12px}
+button,select,input[type=search]{font:inherit;color:inherit}
+.btn{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 14px;cursor:pointer;transition:.15s}
+.btn:hover{border-color:var(--acc)}.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn.p{background:linear-gradient(135deg,var(--acc),var(--acc2));color:var(--accfg);border-color:transparent;font-weight:700}.btn.p:hover{filter:brightness(1.08);box-shadow:0 6px 18px color-mix(in srgb,var(--acc) 40%,transparent)}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:18px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+.card b{display:block;font-size:26px;line-height:1.1}.card span{color:var(--mut);font-size:13px}
+.card.k{border-inline-start:4px solid var(--k)}
+.tabs{display:flex;gap:6px;margin-bottom:12px}
+.tab{padding:9px 18px;border-radius:10px 10px 0 0;border:1px solid var(--line);border-bottom:0;background:transparent;cursor:pointer;color:var(--mut)}
+.tab[aria-selected=true]{background:var(--card);color:var(--fg);font-weight:600;box-shadow:inset 0 3px 0 var(--acc)}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:0 14px 14px 14px;padding:18px;margin-bottom:18px}
+[dir=rtl] .panel{border-radius:14px 0 14px 14px}
+.drop{border:2px dashed var(--line);border-radius:14px;padding:34px 16px;text-align:center;color:var(--mut);transition:.15s}
+.drop.on{border-color:var(--acc);background:color-mix(in srgb,var(--acc) 8%,transparent);color:var(--fg)}
+
+textarea{width:100%;min-height:150px;border:1px solid var(--line);border-radius:12px;background:var(--bg);color:var(--fg);padding:12px;font:13px/1.5 ui-monospace,Consolas,monospace;direction:ltr;text-align:left;resize:vertical}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:12px}
+.note{font-size:12.5px;color:var(--mut);margin-top:8px}
+.bar{height:5px;background:var(--line);border-radius:9px;overflow:hidden;margin-top:12px;display:none}.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--acc),var(--acc2));transition:width .15s}
+.tools{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;align-items:center}
+.tools input[type=search],.tools select{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 12px}
+.tools input[type=search]{flex:1;min-width:160px}
+.tw{overflow-x:auto;background:var(--card);border:1px solid var(--line);border-radius:14px}
+table{width:100%;border-collapse:collapse;min-width:640px}
+th,td{padding:11px 14px;text-align:start;vertical-align:top;border-bottom:1px solid var(--line)}
+th{font-size:12.5px;color:var(--mut);font-weight:600;background:color-mix(in srgb,var(--bg) 60%,var(--card))}
+tr:last-child td{border-bottom:0}
+.nm{font-weight:600;word-break:break-all;direction:ltr;unicode-bidi:plaintext}.mt{color:var(--mut);font-size:12.5px;direction:ltr;unicode-bidi:plaintext}
+.bd{display:inline-block;padding:2px 10px;border-radius:99px;font-size:12px;font-weight:600;color:#fff;background:var(--c)}
+td ul{margin:0;padding-inline-start:18px}td li{margin:2px 0}td li::marker{color:var(--c)}
+.empty{text-align:center;color:var(--mut);padding:36px 12px}
+footer{color:var(--mut);font-size:12.5px;margin-top:22px}
+footer p{margin:6px 0}
+@media print{.panel,.tabs,.tools,header .btn{display:none}body{background:#fff}}
+</style>
+</head>
+<body>
+<div id="runtimeError" role="alert" hidden style="margin:12px;padding:12px;border:2px solid #dc2626;border-radius:12px;background:#fff1f2;color:#7f1d1d;font:14px/1.6 system-ui,sans-serif"></div>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs><symbol id="i-palette" viewBox="0 0 24 24"><circle cx="13.5" cy="6.5" r=".6"/><circle cx="17.5" cy="10.5" r=".6"/><circle cx="8.5" cy="7.5" r=".6"/><circle cx="6.5" cy="12.5" r=".6"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.93 0 1.65-.75 1.65-1.69 0-.44-.18-.84-.44-1.13-.29-.29-.44-.65-.44-1.13a1.64 1.64 0 0 1 1.67-1.67h2c3.05 0 5.55-2.5 5.55-5.55C21.97 6.01 17.46 2 12 2z"/></symbol><symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></symbol><symbol id="i-moon" viewBox="0 0 24 24"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9z"/></symbol><symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20M2 12h20"/></symbol><symbol id="i-filecheck" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 15l2 2 4-4"/></symbol><symbol id="i-link" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></symbol><symbol id="i-upload" viewBox="0 0 24 24"><path d="M4 14.9A7 7 0 1 1 15.7 8h1.8a4.5 4.5 0 0 1 2.5 8.2"/><path d="M12 12v9M16 16l-4-4-4 4"/></symbol><symbol id="i-file" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></symbol><symbol id="i-folder" viewBox="0 0 24 24"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2z"/></symbol><symbol id="i-lock" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></symbol><symbol id="i-alert" viewBox="0 0 24 24"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3z"/><path d="M12 9v4M12 17h.01"/></symbol><symbol id="i-scan" viewBox="0 0 24 24"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2M7 12h10"/></symbol><symbol id="i-wifi" viewBox="0 0 24 24"><path d="M5 13a10 10 0 0 1 14 0M8.5 16.5a5 5 0 0 1 7 0M2 8.82a15 15 0 0 1 20 0M12 20h.01"/></symbol><symbol id="i-sparkles" viewBox="0 0 24 24"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3z"/></symbol><symbol id="i-filetext" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></symbol><symbol id="i-download" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></symbol><symbol id="i-printer" viewBox="0 0 24 24"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></symbol><symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></symbol></defs></svg>
+<div class="wrap">
+<header>
+  <div class="brand"><div class="lg" id="hLogo"></div>
+  <div><h1 id="brand"><span>Trust</span> <span class="g">Scan</span></h1><p class="sub" data-t="tag"></p></div></div>
+  <div class="sp"></div>
+  <button class="btn" id="langBtn"><svg class="ic" aria-hidden="true"><use href="#i-globe"/></svg><span>English</span></button>
+  <button class="btn" id="palBtn" aria-haspopup="true" aria-expanded="false"><svg class="ic" aria-hidden="true"><use href="#i-palette"/></svg><span data-t="colors"></span></button>
+  <button class="btn" id="themeBtn" aria-label="theme"><svg class="ic ic-sun" aria-hidden="true"><use href="#i-sun"/></svg><svg class="ic ic-moon" aria-hidden="true"><use href="#i-moon"/></svg></button>
+  <div class="pal" id="pal" hidden><h3 data-t="palTitle"></h3><div class="g7" id="g7"></div></div>
+</header>
+
+<div id="noticeBar" aria-label="Notification controls">
+  <strong data-t="noticeLabel">التنبيهات</strong>
+  <span class="hint" data-t="noticeHint">سيظهر تنبيه ويصدر صوت بعد اكتمال الفحص.</span>
+  <button class="btn" id="soundBtn" type="button" aria-pressed="true">🔊 <span data-t="soundOn">الصوت مفعّل</span></button>
+  <button class="btn" id="testSound" type="button" data-t="testSound">اختبار الصوت</button>
+</div>
+<div id="toast" role="status" aria-live="polite"></div>
+<p class="note" style="margin:0 0 12px"><svg class="ic" aria-hidden="true"><use href="#i-alert"/></svg><span id="noticeCaution">التصنيف آلي واستدلالي؛ النتيجة السليمة مبدئياً ليست ضماناً خالياً من المخاطر.</span></p>
+<section class="cards" id="cards" aria-live="polite"></section>
+
+<div class="tabs" role="tablist">
+  <button class="tab" role="tab" id="tabF" aria-selected="true"><svg class="ic" aria-hidden="true"><use href="#i-filecheck"/></svg><span data-t="tabFiles"></span></button>
+  <button class="tab" role="tab" id="tabL" aria-selected="false"><svg class="ic" aria-hidden="true"><use href="#i-link"/></svg><span data-t="tabLinks"></span></button>
+</div>
+
+<section class="panel" id="pF">
+  <div class="drop" id="drop" tabindex="0"><svg class="ic" aria-hidden="true"><use href="#i-upload"/></svg><div data-t="drop"></div></div>
+  <input type="file" id="fIn" multiple hidden><input type="file" id="dIn" webkitdirectory hidden>
+  <div class="row">
+    <button class="btn p" id="pick"><svg class="ic" aria-hidden="true"><use href="#i-file"/></svg><span data-t="pick"></span></button>
+    <button class="btn" id="pickD"><svg class="ic" aria-hidden="true"><use href="#i-folder"/></svg><span data-t="pickDir"></span></button>
+  </div>
+  <p class="note"><svg class="ic" aria-hidden="true"><use href="#i-lock"/></svg><span data-t="privacy"></span></p>
+</section>
+
+<section class="panel" id="pL" hidden>
+  <textarea id="urls" spellcheck="false" data-p="urlsPh"></textarea>
+  <div class="row">
+    <button class="btn p" id="anBtn"><svg class="ic" aria-hidden="true"><use href="#i-scan"/></svg><span data-t="analyze"></span></button>
+    <button class="btn" id="reBtn"><svg class="ic" aria-hidden="true"><use href="#i-wifi"/></svg><span data-t="reach"></span></button>
+    <button class="btn" id="exBtn"><svg class="ic" aria-hidden="true"><use href="#i-sparkles"/></svg><span data-t="sample"></span></button>
+    <button class="btn" id="lfBtn"><svg class="ic" aria-hidden="true"><use href="#i-filetext"/></svg><span data-t="fromFiles"></span></button>
+    <input type="file" id="lIn" multiple hidden>
+  </div>
+  <div class="bar" id="bar"><i></i></div>
+  <p class="note" data-t="reachNote"></p>
+</section>
+
+<div class="tools">
+  <input type="search" id="q" data-p="search">
+  <select id="sevF" aria-label="severity"></select>
+  <button class="btn" id="exJ"><svg class="ic" aria-hidden="true"><use href="#i-download"/></svg><span data-t="expJson"></span></button>
+  <button class="btn" id="exC"><svg class="ic" aria-hidden="true"><use href="#i-download"/></svg><span data-t="expCsv"></span></button>
+  <button class="btn" id="prn"><svg class="ic" aria-hidden="true"><use href="#i-printer"/></svg><span data-t="print"></span></button>
+  <button class="btn" id="clr"><svg class="ic" aria-hidden="true"><use href="#i-trash"/></svg><span data-t="clear"></span></button>
+</div>
+<div class="tw"><table>
+  <thead><tr><th data-t="thSev" style="width:120px"></th><th data-t="thItem" style="width:34%"></th><th data-t="thDet"></th></tr></thead>
+  <tbody id="tb"></tbody>
+</table></div>
+
+<footer>
+  <p><svg class="ic" aria-hidden="true"><use href="#i-alert"/></svg><span data-t="disc1"></span></p>
+  <p><svg class="ic" aria-hidden="true" style="visibility:hidden"><use href="#i-alert"/></svg><span data-t="disc2"></span></p>
+</footer>
+</div>
+
+<script type="text/javascript">
+"use strict";
+/* Runtime diagnostics: surface unexpected startup errors instead of failing silently. */
+window.addEventListener("error", function (event) {
+  try {
+    var box = document.getElementById("runtimeError");
+    if (!box) return;
+    box.hidden = false;
+    box.textContent = "تعذّر تشغيل جزء من البرنامج: " + (event.message || "خطأ JavaScript") + " — حدّث الصفحة أو أرسل هذه الرسالة للدعم.";
+  } catch (_) {}
+});
+window.addEventListener("unhandledrejection", function (event) {
+  try {
+    var box = document.getElementById("runtimeError");
+    if (!box) return;
+    box.hidden = false;
+    box.textContent = "حدث خطأ أثناء تنفيذ عملية: " + String(event.reason || "خطأ غير معروف");
+  } catch (_) {}
+});
+/* ================= i18n ================= */
+const SEV=["info","low","medium","high","critical"];
+const UI={
+ar:{settings:"الإعدادات",account:"الحساب",gmail:"ربط Gmail",profile:"الملف الشخصي",alerts:"التنبيهات",notifications:"الإشعارات",help:"التعليمات",version:"الإصدار",profileTitle:"الملف الشخصي",profileDesc:"بيانات محلية اختيارية لهذا المتصفح فقط.",displayName:"الاسم",email:"البريد الإلكتروني",save:"حفظ",saved:"تم حفظ البيانات على هذا الجهاز.",accountTitle:"الحساب",accountDesc:"يعمل Trust Scan مباشرة دون تسجيل دخول أو ربط أي حساب. جميع عمليات الفحص الأساسية متاحة محلياً.",gmailTitle:"ربط Gmail",gmailDesc:"اتصل بحساب Google لقراءة البريد والبحث فيه داخل Trust Scan. لا نطلب كلمة مرورك.",googleClientId:"معرّف عميل Google OAuth",connectGoogle:"الاتصال بـ Google",disconnectGoogle:"فصل الحساب",gmailNotReady:"أدخل معرّف OAuth من Google Cloud ثم اضغط الاتصال.",gmailReady:"تم الاتصال بحساب Gmail.",gmailNeedHttps:"افتح البرنامج عبر HTTPS أو localhost؛ لا يعمل تسجيل Google من file://.",gmailSearch:"بحث في البريد (مثال: from:me newer_than:7d)",gmailLoad:"بحث",gmailLoading:"جارٍ تحميل الرسائل…",gmailEmpty:"لا توجد رسائل مطابقة.",gmailError:"تعذّر الوصول إلى Gmail. تحقق من إعداد OAuth وصلاحية Gmail API.",gmailConnectedAs:"متصل بالحساب",gmailReadOnly:"صلاحية قراءة فقط: لا يمكن إرسال الرسائل أو حذفها.",gmailSubject:"الموضوع",gmailFrom:"من",gmailDate:"التاريخ",gmailOpen:"عرض الرسالة",gmailBack:"إغلاق الرسالة",gmailSetup:"أنشئ OAuth Client ID من Google Cloud، فعّل Gmail API، وأضف نطاق موقعك إلى Authorized JavaScript origins.",alertsTitle:"التنبيهات",alertsDesc:"خيارات التنبيه داخل الواجهة.",riskAlerts:"إظهار تنبيه عند اكتشاف نتيجة عالية الخطورة",notifyTitle:"الإشعارات",notifyDesc:"إعدادات الإشعارات المرئية داخل التطبيق.",scanNotices:"إظهار إشعارات بدء وانتهاء الفحص",helpTitle:"التعليمات",helpDesc:"اختر فحص الملفات لتحليل الملفات محلياً، أو فحص الروابط لتحليل الروابط. راجع النتائج والتفاصيل قبل فتح أي رابط.",versionTitle:"معلومات الإصدار",versionDesc:"Trust Scan — فاحص الملفات والروابط",versionNo:"الإصدار 1.0.0",colors:"الألوان",palTitle:"اختر لون البرنامج",tag:"افحص الملفات التالفة أو المنتحلة والروابط الميتة أو الوهمية — كلّه داخل متصفحك",tabFiles:"فحص الملفات",tabLinks:"فحص الروابط",
+drop:"اسحب الملفات هنا وأفلتها، أو اضغط للاختيار",pick:"اختر ملفات",pickDir:"اختر مجلداً",
+privacy:"الفحص يتم بالكامل على جهازك؛ لا يُرفع أي ملف إلى أي خادم.",
+urlsPh:"ألصق الروابط هنا (رابط في كل سطر، أو نصاً يحوي روابط)…",analyze:"تحليل الروابط",reach:"فحص الاتصال",sample:"جرّب مثالاً",fromFiles:"استخراج من ملفات نصية",
+reachNote:"«فحص الاتصال» يتحقق هل يستجيب الخادم أم لا. المتصفح لا يكشف رمز HTTP (404 مثلاً) بسبب قيود CORS، ويعمل فقط عند فتح الملف محلياً ومع وجود إنترنت. لفحص 404/إعادة التوجيه/الشهادات بدقة استخدم أداة سطر الأوامر.",
+search:"بحث في النتائج…",expJson:"تصدير JSON",expCsv:"تصدير CSV",print:"طباعة",clear:"مسح",
+thSev:"الخطورة",thItem:"العنصر",thDet:"التفاصيل",
+disc1:"تحليل التصيّد استدلالي: الدرجة العالية تعني «مشبوه جداً» وليست دليلاً قاطعاً، والدرجة المنخفضة ليست ضماناً للأمان.",
+disc2:"الأداة لا تفحص الفيروسات بالتواقيع. للفحص الأعمق استخدم VirusTotal أو Google Safe Browsing بالإضافة إليها.",
+c_total:"عناصر مفحوصة",c_critical:"حرجة",c_high:"عالية",c_medium:"متوسطة",c_clean:"سليمة",
+all:"كل المستويات",min:"من مستوى «{0}» فأعلى",
+sev:{info:"سليم",low:"منخفضة",medium:"متوسطة",high:"عالية",critical:"حرجة"},
+none:"لا توجد نتائج بعد. ابدأ بإضافة ملفات أو روابط.",clean:"لا مشاكل",risk:"درجة الخطر",
+reachOk:"الخادم يستجيب",reachFail:"لا استجابة (ميت أو محجوب أو لا إنترنت)",reachNa:"فحص الاتصال غير متاح في هذه البيئة (يلزم فتح الملف محلياً مع اتصال بالإنترنت)",
+loaded:"عدد الروابط: {0}",checking:"جارٍ الفحص…",noticeLabel:"التنبيهات",noticeHint:"سيظهر تنبيه ويصدر صوت بعد اكتمال الفحص.",noticeCaution:"التصنيف آلي واستدلالي؛ النتيجة السليمة مبدئياً ليست ضماناً خالياً من المخاطر.",soundOn:"الصوت مفعّل",soundOff:"الصوت متوقف",testSound:"اختبار الصوت",safeNotice:"نتيجة آمنة مبدئياً: {0} عنصر",riskNotice:"تنبيه أمني: {0} عنصر مشبوه يحتاج مراجعة",mixedNotice:"اكتمل الفحص: {0} آمن و{1} مشبوه",soundBlocked:"قد يمنع المتصفح الصوت حتى تتفاعل مع الصفحة."},
+en:{settings:"Settings",account:"Account",gmail:"Connect Gmail",profile:"Profile",alerts:"Alerts",notifications:"Notifications",help:"Instructions",version:"Version",profileTitle:"Profile",profileDesc:"Optional details stored only in this browser.",displayName:"Name",email:"Email address",save:"Save",saved:"Details saved on this device.",accountTitle:"Account",accountDesc:"Trust Scan works immediately without signing in or connecting an account. Core checks run locally.",gmailTitle:"Connect Gmail",gmailDesc:"Connect a Google account to read and search email inside Trust Scan. Your password is never requested.",googleClientId:"Google OAuth Client ID",connectGoogle:"Connect with Google",disconnectGoogle:"Disconnect account",gmailNotReady:"Enter your OAuth Client ID from Google Cloud, then connect.",gmailReady:"Gmail account connected.",gmailNeedHttps:"Open the app over HTTPS or localhost; Google sign-in does not work from file://.",gmailSearch:"Search mail (e.g. from:me newer_than:7d)",gmailLoad:"Search",gmailLoading:"Loading messages…",gmailEmpty:"No matching messages.",gmailError:"Could not access Gmail. Check OAuth setup and Gmail API permission.",gmailConnectedAs:"Connected account",gmailReadOnly:"Read-only access: sending and deleting messages are not available.",gmailSubject:"Subject",gmailFrom:"From",gmailDate:"Date",gmailOpen:"Open message",gmailBack:"Close message",gmailSetup:"Create an OAuth Client ID in Google Cloud, enable Gmail API, and add your site origin to Authorized JavaScript origins.",alertsTitle:"Alerts",alertsDesc:"In-app alert preferences.",riskAlerts:"Show an alert for high-risk findings",notifyTitle:"Notifications",notifyDesc:"In-app notification preferences.",scanNotices:"Show scan start and completion notices",helpTitle:"Instructions",helpDesc:"Choose File Check to analyze files locally, or Link Check to analyze links. Review findings before opening any link.",versionTitle:"Version information",versionDesc:"Trust Scan — File & Link Inspector",versionNo:"Version 1.0.0",colors:"Colors",palTitle:"Choose app color",tag:"Detect corrupt or spoofed files and broken, fake or phishing links — entirely in your browser",tabFiles:"File check",tabLinks:"Link check",
+drop:"Drag & drop files here, or click to choose",pick:"Choose files",pickDir:"Choose folder",
+privacy:"Everything runs on your device; no file is ever uploaded to any server.",
+urlsPh:"Paste links here (one per line, or any text containing links)…",analyze:"Analyze links",reach:"Check reachability",sample:"Try an example",fromFiles:"Extract from text files",
+reachNote:"“Check reachability” only tells whether the server answers. Browsers hide the HTTP status (e.g. 404) because of CORS, and it works only when this file is opened locally with internet. For accurate 404/redirect/certificate checks use the command-line tool.",
+search:"Search results…",expJson:"Export JSON",expCsv:"Export CSV",print:"Print",clear:"Clear",
+thSev:"Severity",thItem:"Item",thDet:"Details",
+disc1:"Phishing analysis is heuristic: a high score means “very suspicious”, not proof, and a low score is not a safety guarantee.",
+disc2:"This tool does not run signature-based malware scanning. For deeper checks also use VirusTotal or Google Safe Browsing.",
+c_total:"Items scanned",c_critical:"Critical",c_high:"High",c_medium:"Medium",c_clean:"Clean",
+all:"All levels",min:"{0} and above",
+sev:{info:"Clean",low:"Low",medium:"Medium",high:"High",critical:"Critical"},
+none:"No results yet. Add files or links to begin.",clean:"No problems",risk:"Risk score",
+reachOk:"Server responds",reachFail:"No response (dead, blocked or offline)",reachNa:"Reachability check unavailable here (open this file locally with internet access)",
+loaded:"Links: {0}",checking:"Checking…",noticeLabel:"Alerts",noticeHint:"An alert and sound play when a scan finishes.",noticeCaution:"Classification is heuristic. A preliminary safe result is not a guarantee of safety.",soundOn:"Sound on",soundOff:"Sound off",testSound:"Test sound",safeNotice:"Preliminary safe result: {0} item(s)",riskNotice:"Security alert: {0} suspicious item(s) need review",mixedNotice:"Scan complete: {0} safe and {1} suspicious",soundBlocked:"Your browser may block audio until you interact with the page."}};
+const M={
+disguised_executable:["ملف «{0}» هو في الحقيقة تنفيذي (EXE/ELF) متنكّر بامتداد مختلف","'{0}' is really an executable (EXE/ELF) disguised with another extension"],
+type_mismatch:["الامتداد {0} لكن المحتوى الفعلي {1}","Extension is {0} but real content is {1}"],
+double_extension:["امتداد مزدوج «{0}» يوهم أنه مستند عادي","Double extension '{0}' imitates a harmless document"],
+bidi_filename:["اسم الملف فيه رمز عكس الاتجاه (RLO) يُخفي الامتداد الحقيقي","Filename has a right-to-left override hiding the real extension"],
+empty_file:["ملف فارغ","Empty file"],
+png_crc:["خطأ CRC في المقطع {0} — الصورة تالفة","CRC error in chunk {0} — image is corrupt"],
+png_truncated:["صورة PNG مبتورة (مقطع ناقص)","PNG is truncated (incomplete chunk)"],
+png_no_iend:["مقطع IEND مفقود — الصورة غير مكتملة","IEND chunk missing — image incomplete"],
+trailing:["بيانات إضافية بعد نهاية الملف (قد تُخفي حمولة)","Extra data after end of file (possible hidden payload)"],
+jpeg_truncated:["علامة نهاية JPEG (FFD9) مفقودة — الملف مبتور","JPEG end marker (FFD9) missing — truncated"],
+gif_truncated:["خاتمة GIF (0x3B) مفقودة — الملف مبتور","GIF trailer (0x3B) missing — truncated"],
+pdf_truncated:["علامة %%EOF مفقودة — الملف مبتور أو غير مكتمل","%%EOF missing — PDF truncated or incomplete"],
+pdf_no_startxref:["جدول startxref مفقود","startxref missing"],
+pdf_active:["يحتوي PDF على محتوى نشط: {0}","PDF contains active content: {0}"],
+bad_zip:["حاوية ZIP تالفة أو مبتورة","Corrupt or truncated ZIP container"],
+zip_traversal:["مدخل يهرب من مجلد الاستخراج (Zip-Slip): {0}","Entry escapes extraction folder (Zip-Slip): {0}"],
+zip_bomb:["نسبة ضغط مريبة ({0}:1) — قنبلة ضغط محتملة","Suspicious compression ratio ({0}:1) — possible zip bomb"],
+ooxml_structure:["ليس مستند Office صالحاً (أجزاء مطلوبة مفقودة)","Not a valid Office document (required parts missing)"],
+macros:["المستند يحتوي ماكرو VBA","Document contains VBA macros"],
+embedded_exe:["المستند يضمّن ملفاً تنفيذياً","Document embeds an executable"],
+invalid_json:["JSON غير صالح: {0}","Invalid JSON: {0}"],
+invalid_xml:["XML/SVG غير صالح","Invalid XML/SVG"],
+binary_in_text:["بايتات NUL داخل ملف نصي — محتوى ثنائي أو تالف","NUL bytes in a text file — binary or corrupted"],
+bad_encoding:["ترميز UTF-8 غير صالح","Invalid UTF-8 encoding"],
+svg_active:["SVG يحتوي سكربتاً أو معالجات أحداث","SVG contains script or event handlers"],
+trojan_source:["رموز اتجاه مخفية داخل الشيفرة (Trojan Source)","Hidden bidirectional characters in source (Trojan Source)"],
+big:["ملف كبير: أُجريت الفحوص الأساسية فقط","Large file: only basic checks were run"],
+read_error:["تعذّرت قراءة الملف","Could not read file"],
+malformed:["الرابط غير صالح ولا يمكن تحليله","URL is malformed and cannot be parsed"],
+no_https:["يستخدم HTTP غير مشفّر","Uses unencrypted HTTP"],
+userinfo:["يحوي «user@» — المضيف الحقيقي هو ما بعد علامة @ ({0})","Contains 'user@' — the real host is what follows '@' ({0})"],
+userinfo_domain:["يبدو كنطاق قبل علامة @ لإيهامك بالثقة","Looks like a domain before '@' to fake trust"],
+odd_port:["منفذ غير معتاد {0}","Non-standard port {0}"],
+long_url:["رابط طويل جداً ({0} حرفاً)","Very long URL ({0} chars)"],
+heavy_encoding:["ترميز نسبة مئوية كثيف (يُستخدم للإخفاء)","Heavy percent-encoding (used to hide content)"],
+open_redirect:["يحتوي معاملاً يعيد التوجيه إلى رابط آخر","Contains a redirect-to-URL parameter"],
+ip_host:["المضيف عنوان IP مباشر","Host is a raw IP address"],
+private_ip:["يشير إلى عنوان غير عام (خاص/محلي/محجوز)","Points to a non-public (private/loopback/reserved) address"],
+obfuscated_ip:["عنوان IP مموّه (رقمي/سداسي عشري)","Obfuscated IP host (numeric/hex)"],
+punycode:["نطاق دولي (Punycode) قد ينتحل موقعاً آخر","Internationalized domain (Punycode) may imitate another site"],
+mixed_scripts:["يخلط أنظمة كتابة ({0}) — هجوم تماثل الحروف","Mixes writing systems ({0}) — homograph attack"],
+shortener:["رابط مختصر — الوجهة مخفية","URL shortener — destination hidden"],
+risky_tld:["النطاق العلوي «.{0}» كثير الإساءة","TLD '.{0}' is heavily abused"],
+many_sub:["نطاقات فرعية كثيرة ({0})","Too many subdomain levels ({0})"],
+hyphens:["شرطات كثيرة في المضيف","Many hyphens in host"],
+bait:["كلمات استدراج لبيانات الدخول: {0}","Credential-bait words: {0}"],
+brand:["يذكر «{0}» لكنه ليس نطاقاً رسمياً لها","Mentions '{0}' but is not an official domain"],
+typosquat:["«{0}» تشبه إملائياً «{1}» (تقليد محتمل)","'{0}' looks like a misspelling of '{1}'"],
+reach_fail:["لا استجابة من الخادم","No response from server"],
+reach_ok:["الخادم يستجيب","Server responds"]};
+const store={get(k){try{return localStorage.getItem(k)}catch{return null}},set(k,v){try{localStorage.setItem(k,v)}catch{}}};
+const sstore={get(k){try{return sessionStorage.getItem(k)}catch{return null}},set(k,v){try{sessionStorage.setItem(k,v)}catch{}}};
+let lang=store.get("ts_lang")||(/^ar/.test(navigator.language)?"ar":"en");
+const T=k=>UI[lang][k];
+const msg=f=>(M[f.c]?M[f.c][lang==="ar"?0:1]:f.c).replace(/\{(\d)\}/g,(_,i)=>f.a[i]==null?"":"\u2068"+f.a[i]+"\u2069");
+
+/* ================= core helpers ================= */
+const CT=(()=>{const t=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;t[n]=c>>>0}return t})();
+const crc32=(u,s,e)=>{let c=~0;for(let i=s;i<e;i++)c=CT[(c^u[i])&255]^(c>>>8);return~c>>>0};
+const hex=b=>[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join("");
+const startsWith=(u,sig)=>sig.every((b,i)=>u[i]===b);
+const A=s=>[...s].map(c=>c.charCodeAt(0));
+const MAGIC=[[A("\x89PNG\r\n\x1a\n"),"png"],[[0xff,0xd8,0xff],"jpeg"],[A("GIF87a"),"gif"],[A("GIF89a"),"gif"],[A("%PDF-"),"pdf"],
+[[0x50,0x4b,3,4],"zip"],[[0x50,0x4b,5,6],"zip"],[[0x1f,0x8b],"gzip"],[[0x4d,0x5a],"exe"],[[0x7f,0x45,0x4c,0x46],"elf"],
+[A("SQLite format 3\0"),"sqlite"],[A("Rar!\x1a\x07"),"rar"],[[0x37,0x7a,0xbc,0xaf,0x27,0x1c],"7z"],[[0xd0,0xcf,0x11,0xe0,0xa1,0xb1,0x1a,0xe1],"ole"]];
+const sniff=u=>{for(const[s,k]of MAGIC)if(startsWith(u,s))return k;return null};
+const EXTK={png:["png"],jpg:["jpeg"],jpeg:["jpeg"],gif:["gif"],pdf:["pdf"],zip:["zip"],docx:["zip"],xlsx:["zip"],pptx:["zip"],odt:["zip"],jar:["zip"],apk:["zip"],epub:["zip"],
+gz:["gzip"],tgz:["gzip"],exe:["exe"],dll:["exe"],db:["sqlite"],sqlite:["sqlite"],doc:["ole"],xls:["ole"],ppt:["ole"],rar:["rar"],"7z":["7z"]};
+const TEXTX=new Set(["txt","md","json","xml","svg","csv","py","html","htm","yml","yaml","js","css","ini","cfg","toml","log","sh"]);
+const OOXML={docx:"word/document.xml",xlsx:"xl/workbook.xml",pptx:"ppt/presentation.xml"};
+const DANG=new Set(["exe","scr","bat","cmd","com","pif","vbs","js","ps1","msi","jar","lnk","hta"]);
+const DOCX=new Set(["pdf","doc","docx","xls","xlsx","ppt","pptx","txt","jpg","jpeg","png","gif","zip","rar","mp3","mp4"]);
+const EXEC=new Set(["exe","elf"]),BIG=150e6;
+
+/* ================= file validators ================= */
+function vPng(u,add){const dv=new DataView(u.buffer,u.byteOffset,u.length);let o=8,end=false;
+ while(o<u.length){if(o+12>u.length){add("high","png_truncated");return}
+  const len=dv.getUint32(o),t=String.fromCharCode(u[o+4],u[o+5],u[o+6],u[o+7]);
+  if(o+12+len>u.length){add("high","png_truncated");return}
+  if(crc32(u,o+4,o+8+len)!==dv.getUint32(o+8+len)){add("high","png_crc",t);return}
+  o+=12+len;if(t==="IEND"){end=true;if(o<u.length)add("medium","trailing");break}}
+ if(!end)add("high","png_no_iend")}
+function vJpeg(u,add){let e=u.length;while(e>0&&u[e-1]===0)e--;let i=-1;for(let k=e-2;k>=Math.max(0,e-4096);k--)if(u[k]===0xff&&u[k+1]===0xd9){i=k;break}
+ if(i<0)add("high","jpeg_truncated");else if(e-i>64)add("medium","trailing")}
+function vGif(u,add){let e=u.length;while(e>0&&u[e-1]===0)e--;if(u[e-1]!==0x3b)add("high","gif_truncated")}
+function vPdf(u,add){const L=b=>new TextDecoder("latin1").decode(b);
+ const tail=L(u.subarray(Math.max(0,u.length-2048)));
+ if(!tail.includes("%%EOF"))add("high","pdf_truncated");
+ if(!tail.includes("startxref"))add("medium","pdf_no_startxref");
+ if(u.length<=50e6){const s=L(u),seen=[];
+  for(const[t,l]of[["/JavaScript","JavaScript"],["/JS","JavaScript"],["/Launch","Launch"],["/OpenAction","OpenAction"],["/EmbeddedFile","EmbeddedFile"]])
+   if(s.includes(t)&&!seen.includes(l)){seen.push(l)}
+  if(seen.length)add("medium","pdf_active",seen.join(", "))}}
+function vZip(u,ext,add){const dv=new DataView(u.buffer,u.byteOffset,u.length);let e=-1;
+ for(let i=u.length-22;i>=Math.max(0,u.length-65558);i--)if(dv.getUint32(i,true)===0x06054b50){e=i;break}
+ if(e<0){add("high","bad_zip");return}
+ const n=dv.getUint16(e+10,true);let o=dv.getUint32(e+16,true);const names=[];let tu=0,tc=0;
+ for(let i=0;i<n;i++){if(o+46>u.length||dv.getUint32(o,true)!==0x02014b50){add("high","bad_zip");return}
+  const cs=dv.getUint32(o+20,true),us=dv.getUint32(o+24,true),nl=dv.getUint16(o+28,true),el=dv.getUint16(o+30,true),cl=dv.getUint16(o+32,true);
+  if(o+46+nl>u.length){add("high","bad_zip");return}
+  names.push(new TextDecoder().decode(u.subarray(o+46,o+46+nl)));tu+=us;tc+=cs;o+=46+nl+el+cl}
+ if(tu>2**30&&tu/(tc||1)>100)add("high","zip_bomb",Math.floor(tu/(tc||1)));
+ for(const nm of names)if(nm.startsWith("/")||nm.startsWith("\\")||nm.split(/[\\/]/).includes(".."))add("high","zip_traversal",nm);
+ if(OOXML[ext]){const s=new Set(names);if(!s.has("[Content_Types].xml")||!s.has(OOXML[ext]))add("high","ooxml_structure");
+  if(names.some(x=>/vbaproject\.bin$/i.test(x)))add("medium","macros")}
+ if(["docx","xlsx","pptx","odt"].includes(ext)&&names.some(x=>/\.exe$/i.test(x)))add("high","embedded_exe")}
+function vText(u,ext,add){
+ const bom=(u[0]===0xff&&u[1]===0xfe)||(u[0]===0xfe&&u[1]===0xff);
+ if(!bom&&u.subarray(0,8192).includes(0)){add("high","binary_in_text");return}
+ let s;try{s=new TextDecoder(bom?(u[0]===0xff?"utf-16le":"utf-16be"):"utf-8",{fatal:true}).decode(u)}catch{add("medium","bad_encoding");return}
+ if(["py","js","sh","css","html","htm"].includes(ext)&&/[\u202a-\u202e\u2066-\u2069]/.test(s))add("high","trojan_source");
+ if(ext==="json"){try{JSON.parse(s)}catch(e){add("high","invalid_json",String(e.message).slice(0,120))}}
+ else if(ext==="xml"||ext==="svg"){
+  if(typeof DOMParser!=="undefined"){const d=new DOMParser().parseFromString(s,"application/xml");if(d.getElementsByTagName("parsererror").length)add("high","invalid_xml")}
+  if(ext==="svg"&&/<script|\son\w+\s*=/i.test(s))add("medium","svg_active")}}
+
+async function checkFile(f){
+ const F=[],add=(s,c,...a)=>F.push({s,c,a});
+ const name=f.webkitRelativePath||f.name,base=f.name,ext=(base.match(/\.([^.]+)$/)||[,""])[1].toLowerCase();
+ const meta={size:f.size,type:"?",sha:""};
+ if(/[\u202a-\u202e\u2066-\u2069]/.test(base))add("critical","bidi_filename");
+ const p=base.toLowerCase().split(".");
+ if(p.length>=3&&DANG.has(p.at(-1))&&DOCX.has(p.at(-2)))add("high","double_extension","."+p.at(-2)+"."+p.at(-1));
+ if(f.size===0){add(EXTK[ext]||["json","xml","csv"].includes(ext)?"high":"low","empty_file");return mk("file",name,meta,F)}
+ let u;try{u=new Uint8Array(await(f.size>BIG?f.slice(0,8192):f).arrayBuffer())}catch{add("high","read_error");return mk("file",name,meta,F)}
+ if(f.size<=BIG&&typeof crypto!=="undefined"&&crypto.subtle){try{meta.sha=hex(await crypto.subtle.digest("SHA-256",u))}catch{}}
+ const kind=sniff(u),utf16=(u[0]===0xff&&u[1]===0xfe)||(u[0]===0xfe&&u[1]===0xff);
+ meta.type=kind||(u.subarray(0,8192).includes(0)&&!utf16?"binary":"text");
+ if(EXTK[ext]&&!EXTK[ext].includes(kind)){
+  if(EXEC.has(kind))add("critical","disguised_executable","."+ext);else add("high","type_mismatch","."+ext,meta.type)}
+ else if(TEXTX.has(ext)&&(EXEC.has(kind)||["zip","pdf","gzip","ole"].includes(kind)))add(EXEC.has(kind)?"critical":"high","type_mismatch","."+ext,kind);
+ if(f.size>BIG)add("info","big");
+ else try{
+  if(kind==="zip"&&EXTK[ext])vZip(u,ext,add);
+  else if(kind==="pdf"&&ext==="pdf")vPdf(u,add);
+  else if(kind==="png"&&ext==="png")vPng(u,add);
+  else if(kind==="jpeg"&&(ext==="jpg"||ext==="jpeg"))vJpeg(u,add);
+  else if(kind==="gif"&&ext==="gif")vGif(u,add);
+  else if(TEXTX.has(ext)&&!kind)vText(u,ext,add);
+ }catch(e){add("medium","read_error")}
+ return mk("file",name,meta,F)}
+
+/* ================= link analysis ================= */
+const SHORT=new Set(["bit.ly","tinyurl.com","t.co","goo.gl","is.gd","ow.ly","buff.ly","rebrand.ly","cutt.ly","shorturl.at","tiny.cc","rb.gy","t.ly"]);
+const BADTLD=new Set(["zip","mov","xyz","top","click","gq","tk","ml","cf","ga","work","country","kim","support","rest","loan","men","download","review","buzz","cam"]);
+const KW=["login","signin","verify","update","secure","account","password","wallet","bank","billing","confirm","suspend","unlock","invoice","recover","validate","authenticate"];
+const BRANDS={paypal:["paypal.com"],apple:["apple.com","icloud.com"],google:["google.com","googleapis.com","gstatic.com","youtube.com","googleusercontent.com","goo.gl"],
+microsoft:["microsoft.com","live.com","office.com","microsoftonline.com","windows.net","sharepoint.com"],amazon:["amazon.com","amazonaws.com","amazon.sa","amazon.ae"],
+facebook:["facebook.com","fb.com"],instagram:["instagram.com"],whatsapp:["whatsapp.com","whatsapp.net"],netflix:["netflix.com"],
+github:["github.com","github.io","githubusercontent.com"],binance:["binance.com"],twitter:["twitter.com","x.com"],alrajhibank:["alrajhibank.com.sa"],absher:["absher.sa","moi.gov.sa"]};
+const LEET={0:"o",1:"l",3:"e",4:"a",5:"s",7:"t",$:"s","@":"a"};
+const regDom=h=>{const l=h.replace(/\.$/,"").split(".");return l.length>=3&&["co","com","org","net","gov","edu","ac"].includes(l.at(-2))&&l.at(-1).length===2?l.slice(-3).join("."):l.slice(-2).join(".")};
+const lev=(a,b)=>{const d=Array.from({length:a.length+1},(_,i)=>[i,...Array(b.length).fill(0)]);for(let j=1;j<=b.length;j++)d[0][j]=j;
+ for(let i=1;i<=a.length;i++)for(let j=1;j<=b.length;j++)d[i][j]=Math.min(d[i-1][j]+1,d[i][j-1]+1,d[i-1][j-1]+(a[i-1]===b[j-1]?0:1));return d[a.length][b.length]};
+const SCRIPTS=["Latin","Cyrillic","Greek","Arabic","Hebrew","Han","Hangul","Hiragana","Katakana","Thai","Armenian"];
+const lvl=s=>s>=70?"critical":s>=45?"high":s>=20?"medium":"low";
+function privIP(h){const m=h.match(/^(\d+)\.(\d+)\.(\d+)\.(\d+)$/);if(!m)return h==="::1"||/^f[cd]/i.test(h)||/^fe80/i.test(h);
+ const[a,b]=[+m[1],+m[2]];return a===10||a===127||a===0||a>=224||(a===172&&b>=16&&b<=31)||(a===192&&b===168)||(a===169&&b===254)||(a===100&&b>=64&&b<=127)||(a===192&&b===0)||(a===198&&(b===18||b===19||b===51))||(a===203&&b===0)}
+function analyzeURL(raw){const F=[];let score=0;const add=(w,s,c,...a)=>{score+=w;F.push({s,c,a})};
+ let u;try{u=new URL(raw)}catch{return{score:100,F:[{s:"high",c:"malformed",a:[]}]}}
+ if(!/^https?:$/.test(u.protocol))return{score:0,F:[]};
+ const auth=(raw.match(/^https?:\/\/([^\/?#]*)/i)||[,""])[1];
+ const hostRaw=auth.replace(/^.*@/,"").replace(/:\d*$/,"").toLowerCase();
+ const host=u.hostname.toLowerCase().replace(/^\[|\]$/g,"").replace(/\.$/,"");
+ if(u.protocol==="http:")add(10,"low","no_https");
+ if(u.username){add(40,"high","userinfo",u.hostname);if(u.username.includes("."))add(25,"high","userinfo_domain")}
+ if(u.port&&!["80","443"].includes(u.port))add(10,"low","odd_port",u.port);
+ if(raw.length>150)add(10,"low","long_url",raw.length);
+ if((raw.match(/%[0-9a-f]{2}/gi)||[]).length>=6)add(10,"low","heavy_encoding");
+ if(/[?&](url|u|redirect|redir|next|target|dest|goto|link|return)=https?/i.test(raw))add(15,"medium","open_redirect");
+ if(/^(0x[0-9a-f]+|\d+)$/i.test(hostRaw)||/^(0x[0-9a-f]+|0\d+)(\.|$)/i.test(hostRaw)&&/\./.test(hostRaw)){add(40,"high","obfuscated_ip");if(privIP(host))add(0,"medium","private_ip");return{score:Math.min(score,100),F}}
+ if(/^\d+\.\d+\.\d+\.\d+$/.test(host)||host.includes(":")){add(30,"medium","ip_host");if(privIP(host))add(0,"medium","private_ip");return{score:Math.min(score,100),F}}
+ if(host.includes("xn--"))add(25,"medium","punycode");
+ if(/[^\x00-\x7f]/.test(hostRaw)){const sc=SCRIPTS.filter(s=>new RegExp("\\p{Script="+s+"}","u").test(hostRaw));if(sc.length>1)add(30,"high","mixed_scripts",sc.join("+"))}
+ const lab=host.split("."),tld=lab.at(-1),reg=regDom(host),nm=reg.split(".")[0];
+ if(SHORT.has(host)||SHORT.has(reg))add(15,"low","shortener");
+ if(BADTLD.has(tld))add(15,"low","risky_tld",tld);
+ if(lab.length>=5)add(15,"medium","many_sub",lab.length-2);
+ if((host.replace(/xn--/g,"").match(/-/g)||[]).length>=3)add(10,"low","hyphens");
+ const official=Object.values(BRANDS).some(o=>o.includes(reg));
+ const kw=KW.filter(k=>(host+u.pathname).toLowerCase().includes(k));if(kw.length>=2&&!official)add(15,"medium","bait",kw.join(", "));
+ const norm=host.replace(/[013457$@]/g,c=>LEET[c]),nname=reg.replace(/[013457$@]/g,c=>LEET[c]).split(".")[0];
+ for(const[b,off]of Object.entries(BRANDS)){if(off.includes(reg))continue;
+  if(norm.includes(b)){add(40,"high","brand",b);break}
+  if(nname!==b&&nname.length>=5&&1-lev(nname,b)/Math.max(nname.length,b.length)>=0.8){add(35,"high","typosquat",nm,b);break}}
+ return{score:Math.min(score,100),F}}
+const URLRE=/https?:\/\/[^\s<>"'`\\^{}|]+/gi;
+function extract(text){const out=new Set();for(let m of text.match(URLRE)||[]){
+ for(;;){const c=m.at(-1),o={")":"(","]":"[","}":"{",">":"<"}[c];
+  if(o){if(m.split(c).length>m.split(o).length){m=m.slice(0,-1);continue}break}
+  if(".,;:!?'\"".includes(c)){m=m.slice(0,-1);continue}break}
+ if(m.length>10)out.add(m)}return[...out]}
+
+/* ================= model + UI ================= */
+// Shared DOM helpers must be in the script's outer scope because
+// notification and sound functions are declared outside the UI guard.
+const $ = s => document.querySelector(s);
+function mk(kind,name,meta,F,score){const sev=SEV[Math.max(0,...F.map(f=>SEV.indexOf(f.s)))];return{kind,name,meta,F,sev,score:score??null,reach:null}}
+let rows=[];
+let soundEnabled=store.get("ts_sound")!=="off",toastTimer=null;
+function playTone(kind="good"){
+ if(!soundEnabled)return;
+ try{const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;const ctx=new AC();
+ const now=ctx.currentTime, notes=kind==="bad"?[880,620,440]:[660,880];
+ notes.forEach((hz,i)=>{const o=ctx.createOscillator(),g=ctx.createGain();o.type="sine";o.frequency.value=hz;g.gain.setValueAtTime(.0001,now+i*.16);g.gain.exponentialRampToValueAtTime(.12,now+i*.16+.025);g.gain.exponentialRampToValueAtTime(.0001,now+i*.16+.14);o.connect(g);g.connect(ctx.destination);o.start(now+i*.16);o.stop(now+i*.16+.16)});
+ setTimeout(()=>ctx.close(),900);
+ }catch(e){/* Audio is optional; scanning continues if unavailable. */}
+}
+function showNotice(items,source="scan"){
+ if(!items||!items.length)return;
+ const suspicious=items.filter(r=>SEV.indexOf(r.sev)>=2).length,safe=items.length-suspicious;
+ const toast=$("#toast");toast.dataset.kind=suspicious?"bad":"good";
+ const message=suspicious&&safe?T("mixedNotice").replace("{0}",safe).replace("{1}",suspicious):suspicious?T("riskNotice").replace("{0}",suspicious):T("safeNotice").replace("{0}",safe);
+ toast.textContent=(suspicious?"⚠️ ":"✓ ")+message;toast.classList.add("show");
+ clearTimeout(toastTimer);toastTimer=setTimeout(()=>toast.classList.remove("show"),6500);
+ playTone(suspicious?"bad":"good");
+}
+function updateSoundButton(){const b=$("#soundBtn");b.setAttribute("aria-pressed",String(soundEnabled));b.innerHTML=(soundEnabled?"🔊 ":"🔇 ")+`<span>${T(soundEnabled?"soundOn":"soundOff")}</span>`}
+
+if(typeof document!=="undefined"&&document.querySelector){
+const el=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e};
+
+
+/* ================= 3D logo ================= */
+let _lid=0;
+function sh(k,cx=50,cy=54){const m=(x,y)=>`${(cx+(x-50)*k).toFixed(2)} ${(cy+(y-54)*k).toFixed(2)}`;
+ return `M${m(16,24)}Q${m(50,10)} ${m(84,24)}V${(cy+(52-54)*k).toFixed(2)}C${m(84,74)} ${m(66,88)} ${m(50,95)}C${m(34,88)} ${m(16,74)} ${m(16,52)}Z`}
+function makeLogo(host){const id="g"+(++_lid);
+ const D=`<defs>
+<linearGradient id="${id}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" style="stop-color:color-mix(in srgb,var(--acc) 50%,#fff)"/><stop offset=".55" style="stop-color:var(--acc)"/><stop offset="1" style="stop-color:var(--acc2)"/></linearGradient>
+<linearGradient id="${id}g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".5"/><stop offset=".45" stop-color="#fff" stop-opacity=".04"/><stop offset="1" stop-color="#000" stop-opacity=".25"/></linearGradient>
+<linearGradient id="${id}s" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".5"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
+<radialGradient id="${id}l"><stop offset="0" stop-color="#fff" stop-opacity=".9"/><stop offset=".45" stop-color="#fff" stop-opacity=".2"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
+<clipPath id="${id}c"><path d="${sh(.56)}"/></clipPath>
+<filter id="${id}f" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="1.1"/></filter></defs>`;
+ const ly=(z,inner,cls="")=>`<div class="ly ${cls}" style="--z:${z}"><svg viewBox="0 0 100 100" aria-hidden="true">${inner}</svg></div>`;
+ const rp=(k,dash,cls,stroke,extra="")=>`<path class="${cls}" d="${sh(k)}" pathLength="100" fill="none" ${stroke} stroke-width="3.1" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="${dash}" ${extra}/>`;
+ const ring=(k,dash,cls,z,spark)=>ly(z-1.8,rp(k,dash,cls,'style="stroke:color-mix(in srgb,var(--acc2) 38%,#000)"'))+ly(z,`${D}${rp(k,dash,cls,`stroke="url(#${id})"`)}${spark?`<path class="spark" d="${sh(k)}" pathLength="100" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-dasharray="2.4 97.6" filter="url(#${id}f)"/><path class="spark" d="${sh(k)}" pathLength="100" fill="none" stroke="#fff" stroke-width="1.2" stroke-linecap="round" stroke-dasharray="2.4 97.6"/>`:""}`);
+ let ext="";for(let i=0;i<8;i++)ext+=ly(8+i*1.5,`<path d="${sh(.56)}" style="fill:color-mix(in srgb,var(--acc2) ${26+i*6}%,#02060f)"/>`);
+ const face=ly(20.5,`${D}<path d="${sh(.56)}" fill="url(#${id})"/><path d="${sh(.56)}" fill="url(#${id}g)"/>
+  <g clip-path="url(#${id}c)"><rect class="sweep" x="0" y="20" width="26" height="80" fill="url(#${id}s)"/><circle class="lite" cx="50" cy="42" r="30" fill="url(#${id}l)"/></g>
+  <path d="${sh(.56)}" fill="none" stroke="#fff" stroke-opacity=".5" stroke-width=".9"/><path d="${sh(.5)}" fill="none" stroke="#fff" stroke-opacity=".12" stroke-width=".6"/>`);
+ const K="M46.4 54.5h7.2l2.5 14.3c.1.7-.4 1.3-1.1 1.3h-10c-.7 0-1.2-.6-1.1-1.3z",C='<circle cx="50" cy="50" r="6"/>';
+ const key=ly(23.4,`<g fill="#fff" fill-opacity=".38" transform="translate(.6 .9)">${C}<path d="${K}"/></g>`)+ly(24.2,`<g fill="#05102a">${C}<path d="${K}"/></g>`);
+ const glow=ly(-18,`<path d="${sh(1.05)}" style="fill:var(--acc)"/>`,"glow");
+ host.innerHTML=`<div class="shadow"></div><div class="tilt"><div class="stage">${glow}${ring(1,"27 2 11 2 6 2","r1",-8,true)}${ring(.87,"13 2.4 6 3.6","r2",-2)}${ring(.74,"12 3 2 3","r3",4)}${ext}${face}${key}</div></div>`;
+ return host.querySelector(".tilt")}
+
+/* ===== precise pointer tracking engine (spring-smoothed, shared rAF loop) ===== */
+const LOGOS=[];let PX=0,PY=0,lastMove=-1e9;function track(host){const L={host,tilt:makeLogo(host),ry:0,rx:0,sc:1,w:0,ph:0,spin:0,spinT:0,lx:50,ly:42};
+ L.lite=host.querySelector(".lite");L.shadow=host.querySelector(".shadow");
+ host.addEventListener("click",()=>{L.spinT+=360});LOGOS.push(L);return L}
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+function loop(now){try{frame(now)}catch(e){console.warn("logo frame",e)}if(typeof requestAnimationFrame==="function")requestAnimationFrame(loop)}
+function frame(now){const dt=Math.min(.05,(now-(loop.p||now))/1000);loop.p=now;
+ const busy=document.body.classList.contains("busy"),active=now-lastMove<2500;
+ for(let i=LOGOS.length-1;i>=0;i--){const L=LOGOS[i];if(!L.host.isConnected){LOGOS.splice(i,1);continue}
+  L.ph+=dt*(busy?3.2:1);
+  const r=L.host.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2;
+  L.w+=((active?1:0)-L.w)*(1-Math.exp(-dt*4));
+  let ty=Math.sin(L.ph*.9)*30,tx=5+Math.cos(L.ph*.7)*5,lx=50+Math.sin(L.ph*1.1)*34,ly=40+Math.cos(L.ph*.8)*14,hov=0;
+  if(L.w>.001){const dx=PX-cx,dy=PY-cy,k=Math.max(r.width,48)*4.2;
+   const py=Math.tanh(dx/k*2.2)*42,px=-Math.tanh(dy/k*2.2)*34,w=L.w;
+   ty+=(py-ty)*w;tx+=(px-tx)*w;
+   lx+=(clamp(50+dx/r.width*70,4,96)-lx)*w;ly+=(clamp(46+dy/r.height*70,6,90)-ly)*w;
+   hov=Math.hypot(dx,dy)<r.width*.7?1:0}
+  const f=1-Math.exp(-dt*9);
+  L.ry+=(ty-L.ry)*f;L.rx+=(tx-L.rx)*f;L.sc+=((1+.13*hov)-L.sc)*(1-Math.exp(-dt*10));
+  L.spin+=(L.spinT-L.spin)*(1-Math.exp(-dt*4.5));L.lx+=(lx-L.lx)*f;L.ly+=(ly-L.ly)*f;
+  L.tilt.style.transform=`rotateX(${L.rx.toFixed(2)}deg) rotateY(${(L.ry+L.spin).toFixed(2)}deg) scale(${L.sc.toFixed(3)})`;
+  L.lite.setAttribute("cx",L.lx.toFixed(1));L.lite.setAttribute("cy",L.ly.toFixed(1));
+  L.shadow.style.transform=`translateX(${(-L.ry*.35).toFixed(1)}%) scaleX(${(1-Math.abs(L.ry)/170).toFixed(3)})`}
+}
+if(typeof document!=="undefined"){const mv=e=>{PX=e.clientX;PY=e.clientY;lastMove=performance.now()};addEventListener("pointermove",mv,{passive:true});addEventListener("pointerdown",mv,{passive:true});addEventListener("touchmove",e=>{const t=e.touches[0];if(t){PX=t.clientX;PY=t.clientY;lastMove=performance.now()}},{passive:true});
+ document.documentElement.addEventListener("mouseleave",()=>{lastMove=-1e9});addEventListener("blur",()=>{lastMove=-1e9});if(typeof requestAnimationFrame==="function")requestAnimationFrame(loop)}
+
+/* ================= accent themes (7) ================= */
+const ACC=[
+{id:"ocean",n:["المحيط","Ocean"],a:"#2563eb",b:"#06b6d4",f:"#fff"},
+{id:"emerald",n:["الزمرد","Emerald"],a:"#059669",b:"#84cc16",f:"#fff"},
+{id:"royal",n:["البنفسج الملكي","Royal"],a:"#7c3aed",b:"#d946ef",f:"#fff"},
+{id:"sunset",n:["الغروب","Sunset"],a:"#f97316",b:"#ec4899",f:"#fff"},
+{id:"gold",n:["الذهبي","Gold"],a:"#b7791f",b:"#facc15",f:"#1a1200"},
+{id:"rose",n:["القرمزي","Crimson"],a:"#e11d48",b:"#a21caf",f:"#fff"},
+{id:"aurora",n:["الشفق","Aurora"],a:"#14b8a6",b:"#8b5cf6",f:"#fff"}];
+function setAccent(id){const t=ACC.find(x=>x.id===id)||ACC[0],r=document.documentElement.style;
+ r.setProperty("--a",t.a);r.setProperty("--a2",t.b);r.setProperty("--af",t.f);
+ store.set("ts_accent",t.id);
+ document.querySelectorAll(".sw").forEach(b=>b.setAttribute("aria-pressed",b.dataset.id===t.id))}
+function buildPalette(){const g=$("#g7");g.textContent="";
+ ACC.forEach(t=>{const b=el("button","sw");b.dataset.id=t.id;b.type="button";
+  const i=el("i");i.style.background=`linear-gradient(135deg,${t.a},${t.b})`;
+  b.append(i,el("span",0,t.n[lang==="ar"?0:1]));b.onclick=()=>setAccent(t.id);g.append(b)});
+ setAccent(store.get("ts_accent")||"ocean")}
+function setLang(l){lang=l;store.set("ts_lang",l);document.documentElement.lang=l;document.documentElement.dir=l==="ar"?"rtl":"ltr";
+ document.title=l==="ar"?"Trust Scan — فاحص الملفات والروابط":"Trust Scan — File & Link Inspector";
+ $("#langBtn span").textContent=l==="ar"?"English":"العربية";
+ document.querySelectorAll("[data-t]").forEach(e=>e.textContent=T(e.dataset.t));
+ document.querySelectorAll("[data-p]").forEach(e=>e.placeholder=T(e.dataset.p));$("#noticeCaution").textContent=T("noticeCaution");
+ const s=$("#sevF"),cur=s.value||"info";s.textContent="";
+ SEV.forEach((v,i)=>{const o=el("option",0,i?T("min").replace("{0}",T("sev")[v]):T("all"));o.value=v;s.append(o)});s.value=cur;buildPalette();updateSoundButton();render()}
+function cards(){const c=$("#cards");c.textContent="";const n=k=>rows.filter(r=>r.sev===k).length;
+ [["c_total",rows.length,"#2563eb"],["c_critical",n("critical"),"var(--c-critical)"],["c_high",n("high"),"var(--c-high)"],["c_medium",n("medium"),"var(--c-medium)"],["c_clean",n("info")+n("low"),"var(--c-info)"]]
+ .forEach(([k,v,col])=>{const d=el("div","card k");d.style.setProperty("--k",col);d.append(el("b",0,v),el("span",0,T(k)));c.append(d)})}
+function render(){cards();const tb=$("#tb");tb.textContent="";const q=$("#q").value.trim().toLowerCase(),min=SEV.indexOf($("#sevF").value);
+ const list=rows.filter(r=>SEV.indexOf(r.sev)>=min&&(!q||(r.name+" "+r.F.map(msg).join(" ")).toLowerCase().includes(q)))
+  .sort((a,b)=>SEV.indexOf(b.sev)-SEV.indexOf(a.sev)||(b.score||0)-(a.score||0));
+ if(!list.length){const tr=el("tr"),td=el("td","empty",T("none"));td.colSpan=3;tr.append(td);tb.append(tr);return}
+ for(const r of list.slice(0,1500)){const tr=el("tr"),c=`var(--c-${r.sev})`;
+  const b=el("span","bd",T("sev")[r.sev]);b.style.setProperty("--c",c);const sd=el("td");sd.append(b);tr.append(sd);
+  const t=el("td");t.append(el("div","nm",r.name));
+  const m=r.kind==="file"?`${r.meta.type} · ${r.meta.size.toLocaleString()} B`+(r.meta.sha?` · SHA-256 ${r.meta.sha.slice(0,16)}…`:""):`${T("risk")}: ${r.score}/100`;
+  t.append(el("div","mt",m));tr.append(t);
+  const d=el("td"),ul=el("ul");ul.style.setProperty("--c",c);
+  for(const f of r.F.filter(f=>f.s!=="info"||r.kind==="file")){const li=el("li",0,msg(f));li.style.setProperty("--c",`var(--c-${f.s})`);ul.append(li)}
+  if(r.reach!==null){const li=el("li",0,r.reach?T("reachOk"):T("reachFail"));li.style.setProperty("--c",r.reach?"var(--c-info)":"var(--c-high)");ul.append(li)}
+  if(!ul.children.length)ul.append(el("li",0,T("clean")));
+  d.append(ul);tr.append(d);tb.append(tr)}}
+const bar=(p)=>{document.body.classList.toggle("busy",p>=0);const b=$("#bar");b.style.display=p<0?"none":"block";b.firstChild.style.width=p+"%"};
+const tick=()=>new Promise(r=>setTimeout(r,0));
+
+async function addFiles(list){list=[...list];if(!list.length)return;const b=$("#bar");bar(0);const added=[];
+ for(let i=0;i<list.length;i++){const checked=await checkFile(list[i]);rows.push(checked);added.push(checked);if(i%5===4||i===list.length-1){render();await tick()}bar((i+1)*100/list.length)}
+ setTimeout(()=>bar(-1),400);showNotice(added)}
+function analyzeText(){const urls=extract($("#urls").value);rows=rows.filter(r=>r.kind!=="link");const added=[];
+ for(const u of urls){const{score,F}=analyzeURL(u);const r=mk("link",u,{},F,score);r.sev=score<=5?"info":score<20?"low":lvl(score);rows.push(r);added.push(r)}render();showNotice(added);return urls}
+async function reachability(){const urls=analyzeText();if(!urls.length)return;
+ const btn=$("#reBtn");btn.disabled=true;
+ const to=(u,ms=8000)=>{const c=new AbortController(),t=setTimeout(()=>c.abort(),ms);return fetch(u,{mode:"no-cors",cache:"no-store",signal:c.signal,referrerPolicy:"no-referrer"}).then(()=>true,()=>false).finally(()=>clearTimeout(t))};
+ if(!await to("https://www.gstatic.com/generate_204",5000)){alert(T("reachNa"));btn.disabled=false;return}
+ let done=0;bar(0);const q=urls.map(u=>rows.find(r=>r.kind==="link"&&r.name===u));let i=0;
+ await Promise.all(Array.from({length:6},async()=>{while(i<q.length){const r=q[i++];
+  if(privIP(new URL(r.name).hostname.replace(/^\[|\]$/g,""))){r.reach=null;done++;continue}
+  r.reach=await to(r.name);
+  if(!r.reach&&SEV.indexOf(r.sev)<3)r.sev="high";bar(++done*100/q.length);if(done%4===0)render()}}));
+ render();bar(-1);btn.disabled=false;showNotice(q.filter(Boolean))}
+function download(name,text,type){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),2000)}
+const snap=()=>rows.map(r=>({type:r.kind,item:r.name,severity:r.sev,risk:r.score,reachable:r.reach,meta:r.meta,findings:r.F.map(f=>({severity:f.s,code:f.c,message:msg(f)}))}));
+const csvc=v=>{v=String(v??"");if(/^[=+\-@\t\r]/.test(v))v="'"+v;return'"'+v.replace(/"/g,'""')+'"'};
+
+/* events */
+$("#soundBtn").onclick=()=>{soundEnabled=!soundEnabled;store.set("ts_sound",soundEnabled?"on":"off");updateSoundButton();if(soundEnabled)playTone("good")};
+$("#testSound").onclick=()=>{if(!soundEnabled){soundEnabled=true;store.set("ts_sound","on");updateSoundButton()}playTone("bad")};
+$("#langBtn").onclick=()=>setLang(lang==="ar"?"en":"ar");
+$("#themeBtn").onclick=()=>{const r=document.documentElement,d=r.dataset.theme==="dark"||(!r.dataset.theme&&matchMedia("(prefers-color-scheme:dark)").matches);r.dataset.theme=d?"light":"dark"};
+const tab=f=>{$("#pF").hidden=!f;$("#pL").hidden=f;$("#tabF").setAttribute("aria-selected",f);$("#tabL").setAttribute("aria-selected",!f)};
+const pal=$("#pal"),palBtn=$("#palBtn");
+const palShow=v=>{pal.hidden=!v;palBtn.setAttribute("aria-expanded",v)};
+palBtn.onclick=e=>{e.stopPropagation();palShow(pal.hidden)};
+document.addEventListener("click",e=>{if(!pal.contains(e.target))palShow(false)});
+document.addEventListener("keydown",e=>{if(e.key==="Escape")palShow(false)});
+$("#tabF").onclick=()=>tab(true);$("#tabL").onclick=()=>tab(false);
+const dz=$("#drop");
+dz.onclick=()=>$("#fIn").click();dz.onkeydown=e=>{if(e.key==="Enter"||e.key===" ")$("#fIn").click()};
+["dragenter","dragover"].forEach(v=>dz.addEventListener(v,e=>{e.preventDefault();dz.classList.add("on")}));
+["dragleave","drop"].forEach(v=>dz.addEventListener(v,e=>{e.preventDefault();dz.classList.remove("on")}));
+dz.addEventListener("drop",e=>addFiles(e.dataTransfer.files));
+$("#pick").onclick=()=>$("#fIn").click();$("#pickD").onclick=()=>$("#dIn").click();
+$("#fIn").onchange=e=>{addFiles(e.target.files);e.target.value=""};$("#dIn").onchange=e=>{addFiles(e.target.files);e.target.value=""};
+$("#anBtn").onclick=analyzeText;$("#reBtn").onclick=reachability;
+$("#exBtn").onclick=()=>{$("#urls").value=["https://github.com/anthropics","https://en.wikipedia.org/wiki/Phishing_(disambiguation)","http://paypa1-secure-login.xyz/verify/account","https://google.com@evil.example/signin","http://203.0.113.9/login","http://3232235777/bank","https://xn--pypal-4ve.com/","https://bit.ly/3abcXYZ","https://accounts.google.com/signin","https://example.com/?redirect=https://evil.example"].join("\n");analyzeText()};
+$("#lfBtn").onclick=()=>$("#lIn").click();
+$("#lIn").onchange=async e=>{const all=new Set();for(const f of e.target.files){if(f.size<50e6)extract(await f.text()).forEach(u=>all.add(u))}
+ $("#urls").value=[...all].join("\n");e.target.value="";analyzeText()};
+$("#q").oninput=render;$("#sevF").onchange=render;
+$("#clr").onclick=()=>{rows=[];$("#urls").value="";render()};
+$("#prn").onclick=()=>print();
+$("#exJ").onclick=()=>download("trustscan-report.json",JSON.stringify({tool:"trust-scan-web",generated:new Date().toISOString(),results:snap()},null,2),"application/json");
+$("#exC").onclick=()=>download("trustscan-report.csv","\ufeff"+[["type","item","severity","risk","findings"],...snap().map(r=>[r.type,r.item,r.severity,r.risk,r.findings.map(f=>f.message).join(" | ")])].map(r=>r.map(csvc).join(",")).join("\r\n"),"text/csv");
+setLang(lang);
+track($("#hLogo"));
+try{if(!sstore.get("ts_splash")){sstore.set("ts_splash","1");
+ const sp=el("div");sp.id="splash";const w=el("div","in"),lg=el("div","lg");track(lg);
+ const tx=el("div","tx"),h=el("h2");h.innerHTML='Trust <span class="g">Scan</span>';tx.append(h,el("p",0,T("tag")));w.append(lg,tx);sp.append(w);document.body.append(sp);setTimeout(()=>sp.remove(),2600)}}catch{}
+}
+if(typeof globalThis!=="undefined")globalThis.TS={analyzeURL,checkFile,extract,regDom};
+</script>
+</body>
+</html>
